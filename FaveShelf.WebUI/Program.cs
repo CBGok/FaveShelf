@@ -1,5 +1,10 @@
+using FaveShelf.Business.Managers;
+using FaveShelf.Business.Services;
 using FaveShelf.Data.Context;
+using FaveShelf.Data.Entities;
+using FaveShelf.Data.Repositories;
 using FaveShelf.WebUI.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +29,10 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<FaveShelfContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IUserRepository, UserRepository>(); 
+builder.Services.AddScoped<IUserService, UserManager>();
+builder.Services.AddScoped<IPasswordHasher<UserEntity>, PasswordHasher<UserEntity>>();
 
 var app = builder.Build();
 
