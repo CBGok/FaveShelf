@@ -1,7 +1,8 @@
 ﻿using FaveShelf.Business.Services;
-using FaveShelf.WebUI.Models;
-using Microsoft.AspNetCore.Mvc;
 using FaveShelf.Data.Entities;
+using Microsoft.AspNetCore.Mvc;
+using FaveShelf.Business.Dtos;
+using Microsoft.AspNetCore.Authentication;
 
 namespace FaveShelf.WebUI.Controllers
 {
@@ -17,31 +18,50 @@ namespace FaveShelf.WebUI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        public async Task<IActionResult> Register(RegisterDto model)
         {
             if (ModelState.IsValid)
             {
-                var user = new UserEntity
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    Password = model.Password // Şifreyi hashlemek iyi bir uygulamadır
-                };
 
-                var result = await _userService.RegisterUser(user);
+                var result = await _userService.RegisterUser(model);
 
-                if (result)
+                if (result.IsSucceed )
                 {
-                    return Ok("User registered successfully.");
+                    return Ok(new { Message = result.Message});
                 }
                 else
                 {
-                    return BadRequest("User with this email already exists.");
+                    return BadRequest(new { Message = result.Message });
                 }
             }
 
             return BadRequest("Invalid data.");
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userService.LoginUser(model);
+
+                if (user != null)
+                {
+                    // Başarılı girişte, JWT token veya başka bir doğrulama yöntemi dönebiliriz
+                    // Ancak şimdilik basit bir başarı mesajı dönüyoruz
+                    return Ok(new { Message = "Login successful.", User = user });
+                }
+
+                return Unauthorized("Invalid credentials.");
+            }
+
+            return BadRequest("Invalid data.");
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

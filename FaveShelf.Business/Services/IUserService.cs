@@ -1,4 +1,5 @@
-﻿using FaveShelf.Data.Entities;
+﻿using FaveShelf.Business.Dtos;
+using FaveShelf.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace FaveShelf.Business.Services
 {
     public interface IUserService
     {
-        Task<bool> RegisterUser(UserEntity user);
+        Task<OperationResultDto> RegisterUser(RegisterDto registerDto);
+        Task<UserInfoDto> LoginUser(LoginDto loginDto);  
+
     }
 }

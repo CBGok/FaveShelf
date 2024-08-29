@@ -1,4 +1,5 @@
-﻿using FaveShelf.Business.Services;
+﻿using FaveShelf.Business.Dtos;
+using FaveShelf.Business.Services;
 using FaveShelf.Data.Entities;
 using FaveShelf.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -21,18 +22,54 @@ namespace FaveShelf.Business.Managers
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<bool> RegisterUser(UserEntity user)
+        public async Task<UserInfoDto> LoginUser(LoginDto loginDto)
         {
-            var existingUser = await _userRepository.GetUserByEmail(user.Email);
-            if (existingUser != null)
+            var user = await _userRepository.GetUserByEmail(loginDto.Email);
+            if (user == null) { return null; } // user bulunamadı
+
+            var result = _passwordHasher.VerifyHashedPassword(user, user.Password, loginDto.Password);
+            if (result == PasswordVerificationResult.Success)
             {
-                return false; // user zaten varsa 
+                return new UserInfoDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    UserType = Data.Enums.UserTypeEnum.User,
+                };
             }
 
-            user.Password = _passwordHasher.HashPassword(user, user.Password);
+            return null; // şifre yanlışsa 
+        }
+
+        public async Task<OperationResultDto> RegisterUser(RegisterDto registerDto)
+        {
+            var existingUser = await _userRepository.GetUserByEmail(registerDto.Email);
+            if (existingUser != null) 
+            {
+                return new OperationResultDto
+                {
+                    IsSucceed = false,
+                    Message = "This email is taken"
+                };
+            }
+
+            var user = new UserEntity
+            {
+                Email = registerDto.Email,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                Password = _passwordHasher.HashPassword(null, registerDto.Password)
+            };
 
             await _userRepository.AddUser(user);
-            return true; // yeni user eklendi    
+
+            return new OperationResultDto
+            {
+                IsSucceed = true,
+                Message = "Successfull"
+            };
 
         }
 
