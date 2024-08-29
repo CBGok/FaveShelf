@@ -14,6 +14,10 @@ namespace FaveShelf.Data.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public UserTypeEnum UserType { get; set; }
+
+        //fav şarkı
+        public int? FavoriteSongId { get; set; }
+        public virtual SongEntity FavoriteSong { get; set; }
     }
 
     

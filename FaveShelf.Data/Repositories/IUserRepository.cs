@@ -10,6 +10,8 @@ namespace FaveShelf.Data.Repositories
     public interface IUserRepository
     {
         Task<UserEntity> GetUserByEmail(string email);
+        Task<UserEntity> GetUserById(int id);
+
         Task AddUser(UserEntity user);  
     }
 }

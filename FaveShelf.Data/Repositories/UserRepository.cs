@@ -28,5 +28,10 @@ namespace FaveShelf.Data.Repositories
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();  
         }
+
+        public Task<UserEntity> GetUserById(int id)
+        {
+            return _context.Find(id);
+        }
     }
 }

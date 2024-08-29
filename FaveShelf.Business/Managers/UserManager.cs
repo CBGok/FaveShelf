@@ -78,5 +78,10 @@ namespace FaveShelf.Business.Managers
             var result = _passwordHasher.VerifyHashedPassword(user, user.Password, enteredPassword);
             return result == PasswordVerificationResult.Success;
         }
+
+        public async Task<OperationResultDto> SaveFavoriteSong( int userId, FavoriteSongDto favoriteSongDto)
+        {
+            var user = await _userRepository.GetUserByEmail
+        }
     }
 }
