@@ -36,7 +36,7 @@ namespace FaveShelf.Business.Managers
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    UserType = Data.Enums.UserTypeEnum.User,
+                    UserType = user.UserType,
                 };
             }
 
