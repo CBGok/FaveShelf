@@ -11,7 +11,8 @@ namespace FaveShelf.Business.Services
     public interface IUserService
     {
         Task<OperationResultDto> RegisterUser(RegisterDto registerDto);
-        Task<UserInfoDto> LoginUser(LoginDto loginDto);  
+        Task<UserInfoDto> LoginUser(LoginDto loginDto);
+        Task<OperationResultDto> SaveFavoriteSong(int userId, FavoriteSongDto favoriteSongDto);
 
     }
 }

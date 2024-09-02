@@ -11,7 +11,7 @@ namespace FaveShelf.Data.Repositories
     {
         Task<UserEntity> GetUserByEmail(string email);
         Task<UserEntity> GetUserById(int id);
-
         Task AddUser(UserEntity user);  
+        Task UpdateUser(UserEntity user);
     }
 }

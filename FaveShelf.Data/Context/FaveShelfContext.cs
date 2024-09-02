@@ -19,5 +19,6 @@ namespace FaveShelf.Data.Context
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<UserEntity> Users => Set<UserEntity>();
+        public DbSet<SongEntity> Songs => Set<SongEntity>(); // Şarkılar için DbSet
     }
 }

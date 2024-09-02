@@ -4,13 +4,20 @@ using FaveShelf.Data.Context;
 using FaveShelf.Data.Entities;
 using FaveShelf.Data.Repositories;
 using FaveShelf.WebUI.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(); // Konsola loglama ekleyin
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(); // Swagger'ý ekleyin
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<SpotifyService>();
 
@@ -34,7 +41,18 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserManager>();
 builder.Services.AddScoped<IPasswordHasher<UserEntity>, PasswordHasher<UserEntity>>();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = new PathString(""); // Kullanýcý login olmadýysa yönlendirme yapýlacak path
+        options.LogoutPath = new PathString(""); // Kullanýcý logout olduðunda yönlendirme yapýlacak path
+        options.AccessDeniedPath = new PathString(""); // Yetkisiz eriþimde yönlendirme yapýlacak path
+    });
+
+
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -43,6 +61,15 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Swagger middleware'ini ekleyin
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    });
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

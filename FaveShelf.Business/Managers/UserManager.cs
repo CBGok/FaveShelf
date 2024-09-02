@@ -73,15 +73,28 @@ namespace FaveShelf.Business.Managers
 
         }
 
+        public async Task<OperationResultDto> SaveFavoriteSong(int userId, FavoriteSongDto favoriteSongDto)
+        {
+            var user = await _userRepository.GetUserById(userId);
+            if (user == null) 
+            { 
+                return new OperationResultDto { IsSucceed = false, Message = "User not found." }; 
+            }
+
+            user.FavoriteSongId = favoriteSongDto.SongId;
+            await _userRepository.UpdateUser(user);
+
+            return new OperationResultDto() { IsSucceed = true, Message = "Saved" };
+        }
+
         public bool VerifyPassword(UserEntity user, string enteredPassword)
         {
             var result = _passwordHasher.VerifyHashedPassword(user, user.Password, enteredPassword);
             return result == PasswordVerificationResult.Success;
         }
 
-        public async Task<OperationResultDto> SaveFavoriteSong( int userId, FavoriteSongDto favoriteSongDto)
-        {
-            var user = await _userRepository.GetUserByEmail
-        }
+       
     }
 }
+
+
