@@ -1,4 +1,6 @@
-﻿using FaveShelf.WebUI.Models;
+﻿using FaveShelf.Business.Services;
+using FaveShelf.Data.Entities;
+using FaveShelf.WebUI.Models;
 using FaveShelf.WebUI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
@@ -13,11 +15,13 @@ namespace FaveShelf.WebUI.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SpotifyService _spotifyService;
+        private readonly ISongService _songService;
 
-        public SongsController(IHttpClientFactory httpClientFactory, SpotifyService spotifyService)
+        public SongsController(IHttpClientFactory httpClientFactory, SpotifyService spotifyService, ISongService songService)
         {
             _httpClientFactory = httpClientFactory;
             _spotifyService = spotifyService;
+            _songService = songService;
         }
 
         [HttpGet]
@@ -30,8 +34,10 @@ namespace FaveShelf.WebUI.Controllers
             var response = await client.GetStringAsync("https://api.spotify.com/v1/playlists/2YRe7HRKNRvXdJBp9nXFza/tracks");
             var spotifyResponse = JsonSerializer.Deserialize<SpotifyTracksResponse>(response);
 
+            int nextId = 1; // sayaç
             var songs = spotifyResponse.Items.Select(item => new Song
             {
+                Id = nextId++, // Her şarkıya farklı id atıyorum.
                 Name = item.Track.Name,
                 Artist = string.Join(", ", item.Track.Artists.Select(a => a.Name)),
                 Url = item.Track.ExternalUrls.Spotify,
@@ -39,6 +45,33 @@ namespace FaveShelf.WebUI.Controllers
             }).ToList();
 
             return Ok(songs);
+        }
+
+        [HttpGet("load-songs")]
+        public async Task<IActionResult> LoadTopSongs()
+        {
+            var accessToken = await _spotifyService.GetAccessToken();
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            var response = await client.GetStringAsync("https://api.spotify.com/v1/playlists/2YRe7HRKNRvXdJBp9nXFza/tracks");
+            var spotifyResponse = JsonSerializer.Deserialize<SpotifyTracksResponse>(response);
+
+            var songs = spotifyResponse.Items.Select(item => new SongEntity
+            {
+                Name = item.Track.Name,
+                Artist = string.Join(", ", item.Track.Artists.Select(a => a.Name)),
+                Url = item.Track.ExternalUrls.Spotify,
+                ImageUrl = item.Track.Album.Images.FirstOrDefault()?.Url
+            }).ToList();
+
+            // Şarkıları veritabanına kaydet
+            foreach (var song in songs)
+            {
+                await _songService.AddSong(song);
+            }
+
+            return Ok("Songs loaded and saved.");
         }
 
     }
@@ -56,6 +89,9 @@ namespace FaveShelf.WebUI.Controllers
 
     public class SpotifyTrack
     {
+        [JsonPropertyName("id")] // Spotify şarkı ID'si
+        public string Id { get; set; }
+
         [JsonPropertyName("name")]
         public string Name { get; set; }
 

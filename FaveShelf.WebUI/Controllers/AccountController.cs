@@ -5,18 +5,22 @@ using FaveShelf.Business.Dtos;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FaveShelf.WebUI.Controllers
 {
-    [Route("api/account")]
     [ApiController]
+    [Route("api/account")]
+
     public class AccountController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ISongService _songService;
 
-        public AccountController(IUserService userService)
+        public AccountController(IUserService userService, ISongService songService)
         {
             _userService = userService;
+            _songService = songService;
         }
 
         [HttpPost("register")]
@@ -83,10 +87,11 @@ namespace FaveShelf.WebUI.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
-            return RedirectToAction("Index", "Home");
+            return Ok("Logged out successfully.");
         }
 
-        [HttpPost("favorite-song")]
+        [Authorize]
+        [HttpPost("save-favorite-song")] // Favori şarkıyı kaydetme için benzersiz bir rota
         public async Task<IActionResult> SaveFavoriteSong(FavoriteSongDto favoriteSongDto)
         {
             // Kullanıcının giriş yapıp yapmadığını kontrol edin
@@ -118,6 +123,20 @@ namespace FaveShelf.WebUI.Controllers
             }
 
             return BadRequest("Failed to add favorite song");
+        }
+
+        [HttpGet("get-favorite-song/{userId}")] // Favori şarkıyı alma için benzersiz bir rota ve GET methodu
+        public async Task<IActionResult> GetFavoriteSong(int userId)
+        {
+            var user = await _userService.GetUserById(userId);
+
+            if (user == null || user.FavoriteSongId == null)
+            {
+                return NotFound("No favorite song found for the user.");
+            }
+
+            var favoriteSong = await _songService.GetSongById(user.FavoriteSongId.Value);
+            return Ok(favoriteSong);
         }
 
     }

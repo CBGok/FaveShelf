@@ -15,11 +15,18 @@ namespace FaveShelf.Business.Managers
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher<UserEntity> _passwordHasher;
+       private readonly ISongRepository _songRepository;
 
-        public UserManager(IUserRepository userRepository, IPasswordHasher<UserEntity> passwordHasher)
+        public UserManager(IUserRepository userRepository, IPasswordHasher<UserEntity> passwordHasher, ISongRepository songRepository)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
+            _songRepository = songRepository;
+        }
+
+        public async Task<UserEntity> GetUserById(int userId)
+        {
+            return await _userRepository.GetUserById(userId);
         }
 
         public async Task<UserInfoDto> LoginUser(LoginDto loginDto)
@@ -76,15 +83,22 @@ namespace FaveShelf.Business.Managers
         public async Task<OperationResultDto> SaveFavoriteSong(int userId, FavoriteSongDto favoriteSongDto)
         {
             var user = await _userRepository.GetUserById(userId);
-            if (user == null) 
-            { 
-                return new OperationResultDto { IsSucceed = false, Message = "User not found." }; 
+
+            if (user == null)
+            {
+                return new OperationResultDto { IsSucceed = false, Message = "User not found" };
             }
 
-            user.FavoriteSongId = favoriteSongDto.SongId;
+            var song = await _songRepository.GetSongById(favoriteSongDto.SongId);
+            if (song == null)
+            {
+                return new OperationResultDto { IsSucceed = false, Message = "Song not found" };
+            }
+
+            user.FavoriteSongId = song.Id;
             await _userRepository.UpdateUser(user);
 
-            return new OperationResultDto() { IsSucceed = true, Message = "Saved" };
+            return new OperationResultDto { IsSucceed = true, Message = "Favorite song saved successfully" };
         }
 
         public bool VerifyPassword(UserEntity user, string enteredPassword)

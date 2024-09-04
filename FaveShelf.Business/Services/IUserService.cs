@@ -12,6 +12,7 @@ namespace FaveShelf.Business.Services
     {
         Task<OperationResultDto> RegisterUser(RegisterDto registerDto);
         Task<UserInfoDto> LoginUser(LoginDto loginDto);
+        Task<UserEntity> GetUserById(int userId); // Kullanıcıyı ID'ye göre alma metodu
         Task<OperationResultDto> SaveFavoriteSong(int userId, FavoriteSongDto favoriteSongDto);
 
     }

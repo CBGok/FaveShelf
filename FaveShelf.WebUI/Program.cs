@@ -38,16 +38,31 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<FaveShelfContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>(); 
+builder.Services.AddScoped<ISongRepository, SongRepository>(); 
 builder.Services.AddScoped<IUserService, UserManager>();
+builder.Services.AddScoped<ISongService, SongManager>();
 builder.Services.AddScoped<IPasswordHasher<UserEntity>, PasswordHasher<UserEntity>>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        options.Cookie.SameSite = SameSiteMode.Lax; // Cookie'nin nasýl taþýnacaðýný belirtir
         options.LoginPath = new PathString(""); // Kullanýcý login olmadýysa yönlendirme yapýlacak path
         options.LogoutPath = new PathString(""); // Kullanýcý logout olduðunda yönlendirme yapýlacak path
         options.AccessDeniedPath = new PathString(""); // Yetkisiz eriþimde yönlendirme yapýlacak path
     });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000") // Sadece izin verilen orijin
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // Kimlik bilgilerine izin ver
+        });
+});
 
 
 var app = builder.Build();
@@ -77,10 +92,14 @@ app.UseStaticFiles();
 app.UseRouting();
 
 // CORS'u kullanýn
-app.UseCors();
+// app.UseCors();
+
+
+app.UseCors("AllowSpecificOrigin"); // CORS politikasýný uygulayýn
 
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllerRoute(
     name: "default",
