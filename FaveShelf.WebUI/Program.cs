@@ -47,8 +47,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.Cookie.SameSite = SameSiteMode.Lax; // Cookie'nin nasýl taþýnacaðýný belirtir
-        options.LoginPath = new PathString(""); // Kullanýcý login olmadýysa yönlendirme yapýlacak path
-        options.LogoutPath = new PathString(""); // Kullanýcý logout olduðunda yönlendirme yapýlacak path
         options.AccessDeniedPath = new PathString(""); // Yetkisiz eriþimde yönlendirme yapýlacak path
     });
 

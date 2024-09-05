@@ -74,6 +74,7 @@ namespace FaveShelf.WebUI.Controllers
 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
+
                     return Ok(new { Message = "Login successful.", User = user });
                 }
 
@@ -106,14 +107,19 @@ namespace FaveShelf.WebUI.Controllers
             // Eğer id claim'i bulunamazsa hata döndürün
             if (userIdClaim == null)
             {
+                Console.WriteLine("User ID claim is null."); 
                 return BadRequest("User ID not found in claims.");
             }
 
             // id claim'ini int'e çevirin
             var userId = int.Parse(userIdClaim.Value);
 
+            Console.WriteLine(userId);
+            //dtoya eklicem
+            favoriteSongDto.UserId = userId;
+
             // Debug için log ekleyin
-            Console.WriteLine($"UserID: {userId}, SongID: {favoriteSongDto.SongId}");
+            Console.WriteLine($"UserID: {favoriteSongDto.UserId}, SongID: {favoriteSongDto.SongId}");
 
             var result = await _userService.SaveFavoriteSong(userId, favoriteSongDto);
 

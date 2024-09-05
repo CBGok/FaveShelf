@@ -8,6 +8,7 @@ namespace FaveShelf.Business.Dtos
 {
     public class FavoriteSongDto
     {
+        public int UserId { get; set; } // bir de böyle deneyelim
         public int SongId { get; set; }
     }
 }

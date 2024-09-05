@@ -27,24 +27,17 @@ namespace FaveShelf.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTopSongs()
         {
-            var accessToken = await _spotifyService.GetAccessToken();
-            var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await client.GetStringAsync("https://api.spotify.com/v1/playlists/2YRe7HRKNRvXdJBp9nXFza/tracks");
-            var spotifyResponse = JsonSerializer.Deserialize<SpotifyTracksResponse>(response);
-
-            int nextId = 1; // sayaç
-            var songs = spotifyResponse.Items.Select(item => new Song
+            var songs = await _songService.GetTopSongs(); // Burada veritabanındaki şarkıları çekiyoruz
+            var songDtos = songs.Select(song => new
             {
-                Id = nextId++, // Her şarkıya farklı id atıyorum.
-                Name = item.Track.Name,
-                Artist = string.Join(", ", item.Track.Artists.Select(a => a.Name)),
-                Url = item.Track.ExternalUrls.Spotify,
-                ImageUrl = item.Track.Album.Images.FirstOrDefault()?.Url
+                Id = song.Id, // Veritabanındaki Id
+                Name = song.Name,
+                Artist = song.Artist,
+                Url = song.Url,
+                ImageUrl = song.ImageUrl
             }).ToList();
 
-            return Ok(songs);
+            return Ok(songDtos);
         }
 
         [HttpGet("load-songs")]
